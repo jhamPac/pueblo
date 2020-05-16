@@ -3,6 +3,7 @@ package database
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -42,6 +43,22 @@ func (s *State) Persist() error {
 
 		s.txMempool = append(s.txMempool[:i], s.txMempool[i+1:]...)
 	}
+
+	return nil
+}
+
+func (s *State) apply(tx Tx) error {
+	if tx.IsReward() {
+		s.Balances[tx.To] += tx.Value
+		return nil
+	}
+
+	if tx.Value > s.Balances[tx.From] {
+		return fmt.Errorf("insufficient funds")
+	}
+
+	s.Balances[tx.From] -= tx.Value
+	s.Balances[tx.To] += tx.Value
 
 	return nil
 }
