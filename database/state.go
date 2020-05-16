@@ -15,6 +15,16 @@ type State struct {
 	dbFile *os.File
 }
 
+// Add a tx to the Mempool
+func (s *State) Add(tx Tx) error {
+	if err := s.apply(tx); err != nil {
+		return err
+	}
+
+	s.txMempool = append(s.txMempool, tx)
+	return nil
+}
+
 // NewStateFromDisk creates State with a genesis file
 func NewStateFromDisk() (*State, error) {
 	cwd, err := os.Getwd()
