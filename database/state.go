@@ -1,6 +1,8 @@
 package database
 
 import (
+	"bufio"
+	"encoding/json"
 	"os"
 	"path/filepath"
 )
@@ -14,7 +16,7 @@ type State struct {
 }
 
 // NewStateFromDisk creates State with a genesis file
-func NewStateFromDisk(*State, error) {
+func NewStateFromDisk() (*State, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -29,5 +31,29 @@ func NewStateFromDisk(*State, error) {
 	balances := make(map[Account]uint)
 	for account, balance := range gen.Balances {
 		balances[account] = balance
+	}
+
+	txDbFilePath := filepath.Join(cwd, "database", "tx.db")
+	f, err := os.OpenFile(txDbFilePath, os.O_APPEND|os.O_RDWR, 0600)
+	if err != nil {
+		return nil, err
+	}
+
+	scanner := bufio.NewScanner(f)
+	state := &State{balances, make([]Tx, 0), f}
+
+	for scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return nil, err
+		}
+
+		var tx Tx
+		json.Unmarshal(scanner.Bytes(), &tx)
+
+		if err := state.apply(tx); err != nil {
+			return nil, err
+		}
+
+		return state, nil
 	}
 }
