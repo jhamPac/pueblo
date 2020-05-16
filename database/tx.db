@@ -1,10 +1,10 @@
 {"from":"navajo","to":"navajo","value":3,"data":""}
 {"from":"navajo","to":"navajo","value":700,"data":"reward"}
-{"from":"navajo","to":"babayaga","value":2000,"data":""}
+{"from":"navajo","to":"apache","value":2000,"data":""}
 {"from":"navajo","to":"navajo","value":100,"data":"reward"}
-{"from":"babayaga","to":"navajo","value":1,"data":""}
-{"from":"babayaga","to":"caesar","value":1000,"data":""}
-{"from":"babayaga","to":"navajo","value":50,"data":""}
+{"from":"apache","to":"navajo","value":1,"data":""}
+{"from":"apache","to":"cherokee","value":1000,"data":""}
+{"from":"apache","to":"navajo","value":50,"data":""}
 {"from":"navajo","to":"navajo","value":100,"data":"reward"}
 {"from":"navajo","to":"navajo","value":100,"data":"reward"}
 {"from":"navajo","to":"navajo","value":100,"data":"reward"}
