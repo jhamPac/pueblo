@@ -25,6 +25,27 @@ func (s *State) Add(tx Tx) error {
 	return nil
 }
 
+// Persist the Mempool to the dbFile
+func (s *State) Persist() error {
+	mempool := make([]Tx, len(s.txMempool))
+	copy(mempool, s.txMempool)
+
+	for i := 0; i < len(mempool); i++ {
+		txJSON, err := json.Marshal(s.txMempool[i])
+		if err != nil {
+			return err
+		}
+
+		if _, err = s.dbFile.Write(append(txJSON, '\n')); err != nil {
+			return err
+		}
+
+		s.txMempool = append(s.txMempool[:i], s.txMempool[i+1:]...)
+	}
+
+	return nil
+}
+
 // NewStateFromDisk creates State with a genesis file
 func NewStateFromDisk() (*State, error) {
 	// get current working directory
