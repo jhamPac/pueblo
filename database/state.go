@@ -27,6 +27,7 @@ func (s *State) Add(tx Tx) error {
 
 // NewStateFromDisk creates State with a genesis file
 func NewStateFromDisk() (*State, error) {
+	// get current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -38,11 +39,13 @@ func NewStateFromDisk() (*State, error) {
 		return nil, err
 	}
 
+	// create the starting point or beginning state of balances
 	balances := make(map[Account]uint)
 	for account, balance := range gen.Balances {
 		balances[account] = balance
 	}
 
+	// retrieve the all the transactions
 	txDbFilePath := filepath.Join(cwd, "database", "tx.db")
 	f, err := os.OpenFile(txDbFilePath, os.O_APPEND|os.O_RDWR, 0600)
 	if err != nil {
@@ -52,6 +55,7 @@ func NewStateFromDisk() (*State, error) {
 	scanner := bufio.NewScanner(f)
 	state := &State{balances, make([]Tx, 0), f}
 
+	// replay all the transactions
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
 			return nil, err
