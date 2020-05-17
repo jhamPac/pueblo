@@ -108,4 +108,6 @@ func NewStateFromDisk() (*State, error) {
 
 		return state, nil
 	}
+
+	return state, nil
 }

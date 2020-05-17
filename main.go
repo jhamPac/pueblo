@@ -2,11 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jhampac/pueblo/database"
 )
 
 func main() {
-	t := database.NewAccount("5")
-	fmt.Printf("the account %v", t)
+	s, err := database.NewStateFromDisk()
+	if err != nil {
+		log.Fatal("Error in starting the state")
+	}
+
+	fmt.Printf("the account %v", s)
 }
