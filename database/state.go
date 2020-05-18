@@ -47,6 +47,11 @@ func (s *State) Persist() error {
 	return nil
 }
 
+// Close the dbfile that State uses for mempool
+func (s *State) Close() error {
+	return s.dbFile.Close()
+}
+
 func (s *State) apply(tx Tx) error {
 	if tx.IsReward() {
 		s.Balances[tx.To] += tx.Value
