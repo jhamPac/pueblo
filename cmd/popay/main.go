@@ -8,17 +8,17 @@ import (
 )
 
 func main() {
-	cmd := &cobra.Command{
-		Use:   "pueblo",
+	rootCmd := &cobra.Command{
+		Use:   "popay",
 		Short: "Random name for a blockchain",
 		Run:   func(cmd *cobra.Command, args []string) { fmt.Println("Hello from Popay") },
 	}
 
-	cmd.AddCommand(versionCmd)
-	cmd.AddCommand(balancesCmd())
-	cmd.AddCommand(txCmd())
+	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(balancesCmd())
+	rootCmd.AddCommand(txCmd())
 
-	if err := cmd.Execute(); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
