@@ -16,6 +16,7 @@ func main() {
 
 	cmd.AddCommand(versionCmd)
 	cmd.AddCommand(balancesCmd())
+	cmd.AddCommand(txCmd())
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

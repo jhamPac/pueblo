@@ -37,7 +37,7 @@ func txsAddCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			from, _ := cmd.Flags().GetString(flagFrom)
 			to, _ := cmd.Flags().GetString(flagTo)
-			value, _ := cmd.Flags.GetUint(flagValue)
+			value, _ := cmd.Flags().GetUint(flagValue)
 
 			fromAcc := database.NewAccount(from)
 			toAcc := database.NewAccount(to)
@@ -68,7 +68,7 @@ func txsAddCmd() *cobra.Command {
 	cmd.Flags().String(flagFrom, "", "From what account to send tokens")
 	cmd.MarkFlagRequired(flagFrom)
 
-	cmd.Flags.String(flagTo, "", "To what account to send tokens")
+	cmd.Flags().String(flagTo, "", "To what account to send tokens")
 	cmd.MarkFlagRequired(flagTo)
 
 	cmd.Flags().Uint(flagValue, 0, "How many tokens to send")
