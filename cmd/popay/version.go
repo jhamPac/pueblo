@@ -6,15 +6,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const Major = "0"
-const Minor = "1"
-const Fix = "0"
-const Verbal = "TX Add && Balances List"
+const major = "0"
+const minor = "1"
+const patch = "0"
+const description = "TX Add && Balances List"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Describes version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s.%s.%s-beta %s", Major, Minor, Fix, Verbal)
+		fmt.Printf("Version: %s.%s.%s-beta %s", major, minor, patch, description)
 	},
 }
