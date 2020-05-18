@@ -14,6 +14,8 @@ func main() {
 		Run:   func(cmd *cobra.Command, args []string) { fmt.Println("Hello from Popay") },
 	}
 
+	cmd.AddCommand(versionCmd)
+
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
