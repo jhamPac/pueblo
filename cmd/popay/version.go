@@ -13,7 +13,7 @@ const description = "TX Add && Balances List"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Describes version",
+	Short: "print popay version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Version: %s.%s.%s-beta %s", major, minor, patch, description)
 	},

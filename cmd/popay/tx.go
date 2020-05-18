@@ -16,7 +16,7 @@ const flagData = "data"
 func txCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "tx",
-		Short: "Interact with transactions (add ...)",
+		Short: "interact with transactions (add ...)",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return incorrectUsageErr()
 		},
@@ -33,7 +33,7 @@ func txCmd() *cobra.Command {
 func txsAddCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add",
-		Short: "Adds new TX to database",
+		Short: "adds new transactions to the database",
 		Run: func(cmd *cobra.Command, args []string) {
 			from, _ := cmd.Flags().GetString(flagFrom)
 			to, _ := cmd.Flags().GetString(flagTo)

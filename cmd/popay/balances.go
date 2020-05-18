@@ -11,7 +11,7 @@ import (
 func balancesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "balances",
-		Short: "Interact with balances (list...)",
+		Short: "interact with balances (list...)",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return incorrectUsageErr()
 		},
@@ -25,7 +25,7 @@ func balancesCmd() *cobra.Command {
 
 var balancesListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Lists all balances",
+	Short: "lists all balances",
 	Run: func(cmd *cobra.Command, args []string) {
 		state, err := database.NewStateFromDisk()
 		if err != nil {
