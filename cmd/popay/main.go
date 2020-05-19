@@ -11,7 +11,7 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use:   "popay",
 		Short: "Random name for a blockchain",
-		Run:   func(cmd *cobra.Command, args []string) { fmt.Println("Hello from Popay") },
+		Run:   func(cmd *cobra.Command, args []string) { fmt.Println("Popay your friends!") },
 	}
 
 	rootCmd.AddCommand(versionCmd)
