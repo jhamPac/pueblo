@@ -2,18 +2,24 @@ package database
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
+
+// Snapshot of the latest state
+type Snapshot [32]byte
 
 // State encapsulates all the business logic of the chain
 type State struct {
 	Balances  map[Account]uint
 	txMempool []Tx
 
-	dbFile *os.File
+	dbFile   *os.File
+	snapshot Snapshot
 }
 
 // Add a tx to the Mempool
@@ -64,6 +70,22 @@ func (s *State) apply(tx Tx) error {
 
 	s.Balances[tx.From] -= tx.Value
 	s.Balances[tx.To] += tx.Value
+
+	return nil
+}
+
+func (s *State) doSnapshot() error {
+	_, err := s.dbFile.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+
+	txsData, err := ioutil.ReadAll(s.dbFile)
+	if err != nil {
+		return err
+	}
+
+	s.snapshot = sha256.Sum256(txsData)
 
 	return nil
 }
