@@ -3,3 +3,5 @@
 {"from":"cherokee","to":"navajo","value":1000,"data":""}
 {"from":"navajo","to":"navajo","value":1000,"data":"reward"}
 {"from":"navajo","to":"navajo","value":1000,"data":"reward"}
+{"from":"navajo","to":"cherokee","value":1000,"data":""}
+{"from":"navajo","to":"pizarro","value":100000,"data":""}
