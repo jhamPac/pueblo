@@ -88,7 +88,7 @@ func NewStateFromDisk() (*State, error) {
 		balances[account] = balance
 	}
 
-	// retrieve the all the transactions
+	// retrieve all the transactions
 	txDbFilePath := filepath.Join(cwd, "database", "tx.db")
 	f, err := os.OpenFile(txDbFilePath, os.O_APPEND|os.O_RDWR, 0600)
 	if err != nil {
@@ -110,8 +110,11 @@ func NewStateFromDisk() (*State, error) {
 		if err := state.apply(tx); err != nil {
 			return nil, err
 		}
+	}
 
-		return state, nil
+	// persist the transactions that are in the mempool
+	if err := state.Persist(); err != nil {
+		return nil, err
 	}
 
 	return state, nil

@@ -1,1 +1,4 @@
 {"from":"navajo","to":"cherokee","value":100000,"data":""}
+{"from":"cherokee","to":"pizarro","value":50000,"data":""}
+{"from":"cherokee","to":"navajo","value":1000,"data":""}
+{"from":"navajo","to":"navajo","value":1000,"data":"reward"}
