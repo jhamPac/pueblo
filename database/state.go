@@ -65,6 +65,11 @@ func (s *State) Close() error {
 	return s.dbFile.Close()
 }
 
+// LatestSnapshot returns the most recent hash of the db
+func (s *State) LatestSnapshot() Snapshot {
+	return s.snapshot
+}
+
 func (s *State) apply(tx Tx) error {
 	if tx.IsReward() {
 		s.Balances[tx.To] += tx.Value
@@ -79,11 +84,6 @@ func (s *State) apply(tx Tx) error {
 	s.Balances[tx.To] += tx.Value
 
 	return nil
-}
-
-// LatestSnapshot returns the most recent hash of the db
-func (s *State) LatestSnapshot() Snapshot {
-	return s.snapshot
 }
 
 func (s *State) doSnapshot() error {
