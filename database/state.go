@@ -146,8 +146,7 @@ func NewStateFromDisk() (*State, error) {
 		}
 	}
 
-	// persist the transactions that are in the mempool
-	_, err = state.Persist()
+	err = state.doSnapshot()
 	if err != nil {
 		return nil, err
 	}
