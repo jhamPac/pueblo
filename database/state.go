@@ -33,24 +33,31 @@ func (s *State) Add(tx Tx) error {
 }
 
 // Persist the Mempool to the dbFile
-func (s *State) Persist() error {
+func (s *State) Persist() (Snapshot, error) {
 	mempool := make([]Tx, len(s.txMempool))
 	copy(mempool, s.txMempool)
 
 	for i := 0; i < len(mempool); i++ {
 		txJSON, err := json.Marshal(s.txMempool[i])
 		if err != nil {
-			return err
+			return Snapshot{}, err
 		}
 
+		fmt.Printf("Persisting new TX to disk:\n")
+		fmt.Printf("\t%s\n", txJSON)
 		if _, err = s.dbFile.Write(append(txJSON, '\n')); err != nil {
-			return err
+			return Snapshot{}, err
 		}
+
+		if err := s.doSnapshot(); err != nil {
+			return Snapshot{}, err
+		}
+		fmt.Printf("New DB Snapshot: %x\n", s.snapshot)
 
 		s.txMempool = append(s.txMempool[:i], s.txMempool[i+1:]...)
 	}
 
-	return nil
+	return s.snapshot, nil
 }
 
 // Close the dbfile that State uses for mempool
