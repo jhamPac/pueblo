@@ -81,6 +81,11 @@ func (s *State) apply(tx Tx) error {
 	return nil
 }
 
+// LatestSnapshot returns the most recent hash of the db
+func (s *State) LatestSnapshot() Snapshot {
+	return s.snapshot
+}
+
 func (s *State) doSnapshot() error {
 	_, err := s.dbFile.Seek(0, 0)
 	if err != nil {
@@ -125,7 +130,7 @@ func NewStateFromDisk() (*State, error) {
 	}
 
 	scanner := bufio.NewScanner(f)
-	state := &State{balances, make([]Tx, 0), f}
+	state := &State{balances, make([]Tx, 0), f, Snapshot{}}
 
 	// replay all the transactions
 	for scanner.Scan() {
@@ -142,7 +147,8 @@ func NewStateFromDisk() (*State, error) {
 	}
 
 	// persist the transactions that are in the mempool
-	if err := state.Persist(); err != nil {
+	_, err = state.Persist()
+	if err != nil {
 		return nil, err
 	}
 
