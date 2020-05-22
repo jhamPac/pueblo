@@ -52,7 +52,7 @@ func (s *State) Persist() (Snapshot, error) {
 		if err := s.doSnapshot(); err != nil {
 			return Snapshot{}, err
 		}
-		fmt.Printf("New DB Snapshot: %x\n", s.snapshot)
+		fmt.Printf("\tNew DB Snapshot: %x\n", s.snapshot)
 
 		s.txMempool = append(s.txMempool[:i], s.txMempool[i+1:]...)
 	}
