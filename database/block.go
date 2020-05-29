@@ -26,8 +26,14 @@ type Block struct {
 	TXs    []Tx        `json:"payload"`
 }
 
-// BlockHeader is meta data for a Block
+// BlockHeader is meta data for Blocks
 type BlockHeader struct {
+	Parent Hash   `json:"parent"`
+	Time   uint64 `json:"time"`
+}
+
+// BlockFS is ...
+type BlockFS struct {
 	Key   Hash  `json:"hash"`
 	Value Block `json:"block"`
 }
