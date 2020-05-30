@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var migrate = &cobra.Command{
+var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "migrate tx to block database",
 	Run: func(cmd *cobra.Command, args []string) {
