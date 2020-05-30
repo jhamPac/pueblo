@@ -72,6 +72,30 @@ func (s *State) LatestSnapshot() Snapshot {
 	return s.snapshot
 }
 
+// LatestBlockHash return the most recent block hash
+func (s *State) LatestBlockHash() Hash {
+	return s.latestBlockHash
+}
+
+// AddBlock adds a new Block to the db chain
+func (s *State) AddBlock(b Block) error {
+	for _, tx := range b.TXs {
+		if err := s.AddTx(tx); err := nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AddTx adds a Tx during the AddBlock process
+func (s *State) AddTx(tx Tx) error {
+	if err := s.apply(tx); err != nil {
+		return err
+	}
+	s.txMempool = append(s.txMempool, tx)
+	return nil
+}
+
 func (s *State) apply(tx Tx) error {
 	if tx.IsReward() {
 		s.Balances[tx.To] += tx.Value
