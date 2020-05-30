@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // Snapshot of the latest state
@@ -18,8 +19,8 @@ type State struct {
 	Balances  map[Account]uint
 	txMempool []Tx
 
-	dbFile   *os.File
-	snapshot Snapshot
+	dbFile          *os.File
+	latestBlockHash Hash
 }
 
 // Add a tx to the Mempool
@@ -33,31 +34,32 @@ func (s *State) Add(tx Tx) error {
 }
 
 // Persist the Mempool to the dbFile
-func (s *State) Persist() (Snapshot, error) {
-	mempool := make([]Tx, len(s.txMempool))
-	copy(mempool, s.txMempool)
-
-	for i := 0; i < len(mempool); i++ {
-		txJSON, err := json.Marshal(s.txMempool[i])
-		if err != nil {
-			return Snapshot{}, err
-		}
-
-		fmt.Printf("Persisting new TX to disk:\n")
-		fmt.Printf("\t%s\n", txJSON)
-		if _, err = s.dbFile.Write(append(txJSON, '\n')); err != nil {
-			return Snapshot{}, err
-		}
-
-		if err := s.doSnapshot(); err != nil {
-			return Snapshot{}, err
-		}
-		fmt.Printf("\tNew DB Snapshot: %x\n", s.snapshot)
-
-		s.txMempool = append(s.txMempool[:i], s.txMempool[i+1:]...)
+func (s *State) Persist() (Hash, error) {
+	block := NewBlock(s.latestBlockHash, uint64(time.Now().Unix()), s.txMempool)
+	blockHash, err := block.Hash()
+	if err != nil {
+		return Hash{}, nil
 	}
 
-	return s.snapshot, nil
+	blockFs := BlockFS{blockHash, block}
+
+	blockFsJSON, err := json.Marshal(blockFs)
+	if err != nil {
+		return Hash{}, err
+	}
+
+	fmt.Println("Persisting new Block to disk:")
+	fmt.Printf("\t%s\n", blockFsJSON)
+
+	if _, err = s.dbFile.Write(append(blockFsJSON, '\n')); err != nil {
+		return Hash{}, nil
+	}
+
+	s.latestBlockHash = blockHash
+
+	s.txMempool = []Tx{}
+
+	return s.latestBlockHash, nil
 }
 
 // Close the dbfile that State uses for mempool
