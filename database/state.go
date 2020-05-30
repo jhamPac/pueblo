@@ -2,10 +2,8 @@ package database
 
 import (
 	"bufio"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -67,11 +65,6 @@ func (s *State) Close() error {
 	return s.dbFile.Close()
 }
 
-// LatestSnapshot returns the most recent hash of the db
-func (s *State) LatestSnapshot() Snapshot {
-	return s.snapshot
-}
-
 // LatestBlockHash return the most recent block hash
 func (s *State) LatestBlockHash() Hash {
 	return s.latestBlockHash
@@ -80,7 +73,7 @@ func (s *State) LatestBlockHash() Hash {
 // AddBlock adds a new Block to the db chain
 func (s *State) AddBlock(b Block) error {
 	for _, tx := range b.TXs {
-		if err := s.AddTx(tx); err := nil {
+		if err := s.AddTx(tx); err != nil {
 			return err
 		}
 	}
@@ -96,6 +89,15 @@ func (s *State) AddTx(tx Tx) error {
 	return nil
 }
 
+func (s *State) applyBlock(b Block) error {
+	for _, tx := range b.TXs {
+		if err := s.apply(tx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *State) apply(tx Tx) error {
 	if tx.IsReward() {
 		s.Balances[tx.To] += tx.Value
@@ -108,22 +110,6 @@ func (s *State) apply(tx Tx) error {
 
 	s.Balances[tx.From] -= tx.Value
 	s.Balances[tx.To] += tx.Value
-
-	return nil
-}
-
-func (s *State) doSnapshot() error {
-	_, err := s.dbFile.Seek(0, 0)
-	if err != nil {
-		return err
-	}
-
-	txsData, err := ioutil.ReadAll(s.dbFile)
-	if err != nil {
-		return err
-	}
-
-	s.snapshot = sha256.Sum256(txsData)
 
 	return nil
 }
@@ -149,14 +135,14 @@ func NewStateFromDisk() (*State, error) {
 	}
 
 	// retrieve all the transactions
-	txDbFilePath := filepath.Join(cwd, "database", "tx.json")
+	txDbFilePath := filepath.Join(cwd, "database", "block.json")
 	f, err := os.OpenFile(txDbFilePath, os.O_APPEND|os.O_RDWR, 0600)
 	if err != nil {
 		return nil, err
 	}
 
 	scanner := bufio.NewScanner(f)
-	state := &State{balances, make([]Tx, 0), f, Snapshot{}}
+	state := &State{balances, make([]Tx, 0), f, Hash{}}
 
 	// replay all the transactions
 	for scanner.Scan() {
@@ -164,17 +150,19 @@ func NewStateFromDisk() (*State, error) {
 			return nil, err
 		}
 
-		var tx Tx
-		json.Unmarshal(scanner.Bytes(), &tx)
-
-		if err := state.apply(tx); err != nil {
+		blockFsJSON := scanner.Bytes()
+		var blockFs BlockFS
+		err = json.Unmarshal(blockFsJSON, &blockFs)
+		if err != nil {
 			return nil, err
 		}
-	}
 
-	err = state.doSnapshot()
-	if err != nil {
-		return nil, err
+		err = state.applyBlock(blockFs.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		state.latestBlockHash = blockFs.Key
 	}
 
 	return state, nil

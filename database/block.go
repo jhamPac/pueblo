@@ -17,7 +17,13 @@ func (h Hash) MarshelText() ([]byte, error) {
 // UnmarshalText decodes hex into a string
 func (h Hash) UnmarshalText(data []byte) error {
 	_, err := hex.Decode(h[:], data)
-	return
+	return err
+}
+
+// BlockFS is ...
+type BlockFS struct {
+	Key   Hash  `json:"hash"`
+	Value Block `json:"block"`
 }
 
 // Block for a batch of transactions
@@ -30,12 +36,6 @@ type Block struct {
 type BlockHeader struct {
 	Parent Hash   `json:"parent"`
 	Time   uint64 `json:"time"`
-}
-
-// BlockFS is ...
-type BlockFS struct {
-	Key   Hash  `json:"hash"`
-	Value Block `json:"block"`
 }
 
 // NewBlock creates and returns a Block
