@@ -9,8 +9,8 @@ import (
 // Hash replaces the Snapshot type
 type Hash [32]byte
 
-// MarshelText encodes a has into a hex value
-func (h Hash) MarshelText() ([]byte, error) {
+// MarshalText encodes a has into a hex value
+func (h Hash) MarshalText() ([]byte, error) {
 	return []byte(hex.EncodeToString(h[:])), nil
 }
 

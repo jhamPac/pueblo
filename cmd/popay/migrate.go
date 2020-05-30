@@ -18,7 +18,7 @@ var migrateCmd = &cobra.Command{
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		state.Close()
+		defer state.Close()
 
 		block0 := database.NewBlock(
 			database.Hash{},
