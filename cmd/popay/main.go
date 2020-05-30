@@ -17,6 +17,7 @@ func main() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(balancesCmd())
 	rootCmd.AddCommand(txCmd())
+	rootCmd.AddCommand(migrateCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
