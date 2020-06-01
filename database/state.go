@@ -132,7 +132,7 @@ func NewStateFromDisk() (*State, error) {
 	}
 
 	// retrieve all the transactions
-	txDbFilePath := filepath.Join(cwd, "database", "block.json")
+	txDbFilePath := filepath.Join(cwd, "database", "blocks.json")
 	f, err := os.OpenFile(txDbFilePath, os.O_APPEND|os.O_RDWR, 0600)
 	if err != nil {
 		return nil, err
