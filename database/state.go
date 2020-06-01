@@ -27,6 +27,32 @@ func (s *State) AddTx(tx Tx) error {
 	return nil
 }
 
+// AddBlock adds a new Block to the db chain
+func (s *State) AddBlock(b Block) error {
+	for _, tx := range b.TXs {
+		if err := s.AddTx(tx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *State) apply(tx Tx) error {
+	if tx.IsReward() {
+		s.Balances[tx.To] += tx.Value
+		return nil
+	}
+
+	if tx.Value > s.Balances[tx.From] {
+		return fmt.Errorf("insufficient funds")
+	}
+
+	s.Balances[tx.From] -= tx.Value
+	s.Balances[tx.To] += tx.Value
+
+	return nil
+}
+
 // Persist the Mempool to the dbFile
 func (s *State) Persist() (Hash, error) {
 	block := NewBlock(s.latestBlockHash, uint64(time.Now().Unix()), s.txMempool)
@@ -64,32 +90,6 @@ func (s *State) Close() error {
 // LatestBlockHash return the most recent block hash
 func (s *State) LatestBlockHash() Hash {
 	return s.latestBlockHash
-}
-
-// AddBlock adds a new Block to the db chain
-func (s *State) AddBlock(b Block) error {
-	for _, tx := range b.TXs {
-		if err := s.AddTx(tx); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (s *State) apply(tx Tx) error {
-	if tx.IsReward() {
-		s.Balances[tx.To] += tx.Value
-		return nil
-	}
-
-	if tx.Value > s.Balances[tx.From] {
-		return fmt.Errorf("insufficient funds")
-	}
-
-	s.Balances[tx.From] -= tx.Value
-	s.Balances[tx.To] += tx.Value
-
-	return nil
 }
 
 // NewStateFromDisk creates State with a genesis file
