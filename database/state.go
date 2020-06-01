@@ -76,15 +76,6 @@ func (s *State) AddBlock(b Block) error {
 	return nil
 }
 
-func (s *State) applyBlock(b Block) error {
-	for _, tx := range b.TXs {
-		if err := s.apply(tx); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (s *State) apply(tx Tx) error {
 	if tx.IsReward() {
 		s.Balances[tx.To] += tx.Value
@@ -144,7 +135,7 @@ func NewStateFromDisk() (*State, error) {
 			return nil, err
 		}
 
-		err = state.applyBlock(blockFs.Value)
+		err = state.AddBlock(blockFs.Value)
 		if err != nil {
 			return nil, err
 		}
