@@ -9,9 +9,6 @@ import (
 	"time"
 )
 
-// Snapshot of the latest state
-type Snapshot [32]byte
-
 // State encapsulates all the business logic of the chain
 type State struct {
 	Balances  map[Account]uint
