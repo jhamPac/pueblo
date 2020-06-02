@@ -18,17 +18,17 @@ func balancesCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {},
 	}
 
-	cmd.AddCommand(balancesListCmd)
+	cmd.AddCommand(balancesListCmd())
 
 	return cmd
 }
 
 func balancesListCmd() *cobra.Command {
-	var blCmd = *cobra.Command{
+	var blCmd = &cobra.Command{
 		Use:   "list",
 		Short: "lists all balances",
 		Run: func(cmd *cobra.Command, args []string) {
-			dataDir, _ := cmd.Flags()GetString(flagDataDir)
+			dataDir, _ := cmd.Flags().GetString(flagDataDir)
 			state, err := database.NewStateFromDisk(dataDir)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)

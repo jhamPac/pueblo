@@ -35,6 +35,7 @@ func txsAddCmd() *cobra.Command {
 		Use:   "add",
 		Short: "adds new transactions to the database",
 		Run: func(cmd *cobra.Command, args []string) {
+			cwd, _ := os.Getwd()
 			from, _ := cmd.Flags().GetString(flagFrom)
 			to, _ := cmd.Flags().GetString(flagTo)
 			value, _ := cmd.Flags().GetUint(flagValue)
@@ -45,7 +46,7 @@ func txsAddCmd() *cobra.Command {
 
 			tx := database.NewTx(fromAcc, toAcc, value, data)
 
-			state, err := database.NewStateFromDisk()
+			state, err := database.NewStateFromDisk(cwd)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				os.Exit(1)
