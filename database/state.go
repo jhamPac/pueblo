@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 )
 
@@ -93,15 +92,13 @@ func (s *State) LatestBlockHash() Hash {
 }
 
 // NewStateFromDisk creates State with a genesis file
-func NewStateFromDisk() (*State, error) {
-	// get current working directory
-	cwd, err := os.Getwd()
+func NewStateFromDisk(dataDir) (*State, error) {
+	err := initDataDirIfNotExists(dataDir)
 	if err != nil {
 		return nil, err
 	}
 
-	genFilePath := filepath.Join(cwd, "database", "genesis.json")
-	gen, err := loadGenesis(genFilePath)
+	gen, err := loadGenesis(getGenesisJSONFilePath(dataDir))
 	if err != nil {
 		return nil, err
 	}
@@ -112,9 +109,7 @@ func NewStateFromDisk() (*State, error) {
 		balances[account] = balance
 	}
 
-	// retrieve all the transactions
-	txDbFilePath := filepath.Join(cwd, "database", "blocks.json")
-	f, err := os.OpenFile(txDbFilePath, os.O_APPEND|os.O_RDWR, 0600)
+	f, err := os.OpenFile(getBlocksDbFilePath(dataDir), os.O_APPEND|os.O_RDWR, 0600)
 	if err != nil {
 		return nil, err
 	}
