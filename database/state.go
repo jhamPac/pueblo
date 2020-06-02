@@ -92,7 +92,7 @@ func (s *State) LatestBlockHash() Hash {
 }
 
 // NewStateFromDisk creates State with a genesis file
-func NewStateFromDisk(dataDir) (*State, error) {
+func NewStateFromDisk(dataDir string) (*State, error) {
 	err := initDataDirIfNotExists(dataDir)
 	if err != nil {
 		return nil, err

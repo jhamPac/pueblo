@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	s, err := database.NewStateFromDisk()
+	s, err := database.NewStateFromDisk("~/pueblo/.db")
 	if err != nil {
 		log.Fatal("Error in starting the state")
 	}
