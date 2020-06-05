@@ -52,6 +52,16 @@ func (s *State) apply(tx Tx) error {
 	return nil
 }
 
+func (s *State) applyBlock(b Block) error {
+	for _, tx := range b.TXs {
+		if err := s.apply(tx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Persist the Mempool to the dbFile
 func (s *State) Persist() (Hash, error) {
 	block := NewBlock(s.latestBlockHash, uint64(time.Now().Unix()), s.txMempool)
@@ -130,7 +140,7 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 			return nil, err
 		}
 
-		err = state.AddBlock(blockFs.Value)
+		err = state.applyBlock(blockFs.Value)
 		if err != nil {
 			return nil, err
 		}
