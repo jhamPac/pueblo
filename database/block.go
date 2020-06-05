@@ -15,7 +15,7 @@ func (h Hash) MarshalText() ([]byte, error) {
 }
 
 // UnmarshalText decodes hex into a string
-func (h Hash) UnmarshalText(data []byte) error {
+func (h *Hash) UnmarshalText(data []byte) error {
 	_, err := hex.Decode(h[:], data)
 	return err
 }
