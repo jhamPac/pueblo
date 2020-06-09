@@ -26,7 +26,7 @@ type BalancesRes struct {
 type TxAddReq struct {
 	From  string `json:"from"`
 	To    string `json:"to"`
-	Value string `json:"value"`
+	Value uint   `json:"value"`
 	Data  string `json:"data"`
 }
 
@@ -39,21 +39,25 @@ type TxAddRes struct {
 func Run(dataDir string) error {
 	state, err := database.NewStateFromDisk(dataDir)
 	if err != nil {
-		return
+		return err
 	}
 	defer state.Close()
 
-	http.HandleFunc("/balances/list", listBalancesHandler)
-	http.HandleFunc("/tx/add", txAddHandler)
+	http.HandleFunc("/balances/list", func(w http.ResponseWriter, r *http.Request) {
+		listBalancesHandler(w, r, state)
+	})
+	http.HandleFunc("/tx/add", func(w http.ResponseWriter, r *http.Request) {
+		txAddHandler(w, r, state)
+	})
 
-	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
+	return http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
 }
 
-func listBalancesHandler(w http.ResponseWriter, r *http.Request) {
+func listBalancesHandler(w http.ResponseWriter, r *http.Request, state *database.State) {
 	writeRes(w, BalancesRes{state.LatestBlockHash(), state.Balances})
 }
 
-func txAddHandler(w http.ResponseWriter, r *http.Request) {
+func txAddHandler(w http.ResponseWriter, r *http.Request, state *database.State) {
 	req := TxAddReq{}
 	err := readReq(r, &req)
 	if err != nil {
@@ -79,7 +83,7 @@ func txAddHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeErrRes(w http.ResponseWriter, err error) {
-	jsonErrRes, _ := json.Marshal(ErrRes{err.Error})
+	jsonErrRes, _ := json.Marshal(ErrRes{err.Error()})
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
 	w.Write(jsonErrRes)
