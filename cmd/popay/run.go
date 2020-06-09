@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jhampac/pueblo/node"
 	"github.com/spf13/cobra"
 )
 
