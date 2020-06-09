@@ -44,6 +44,7 @@ func Run(dataDir string) error {
 	defer state.Close()
 
 	http.HandleFunc("/balances/list", listBalancesHandler)
+	http.HandleFunc("/tx/add", txAddHandler)
 
 	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
 }
