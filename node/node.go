@@ -46,8 +46,14 @@ func Run(dataDir string) error {
 	http.HandleFunc("/balances/list", func(w http.ResponseWriter, r *http.Request) {
 		listBalancesHandler(w, r, state)
 	})
+
 	http.HandleFunc("/tx/add", func(w http.ResponseWriter, r *http.Request) {
 		txAddHandler(w, r, state)
+	})
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "Popay your friends and family fast!")
 	})
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
