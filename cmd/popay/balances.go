@@ -24,7 +24,7 @@ func balancesCmd() *cobra.Command {
 }
 
 func balancesListCmd() *cobra.Command {
-	var blCmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "lists all balances",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -45,7 +45,7 @@ func balancesListCmd() *cobra.Command {
 		},
 	}
 
-	addDefaultRequiredFlags(blCmd)
+	addDefaultRequiredFlags(cmd)
 
-	return blCmd
+	return cmd
 }
