@@ -1,17 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/jhampac/pueblo/database"
+	"github.com/jhampac/pueblo/node"
 )
 
 func main() {
-	s, err := database.NewStateFromDisk("~/pueblo/.db")
-	if err != nil {
-		log.Fatal("Error in starting the state")
+	if err := node.Run("pwd"); err != nil {
+		log.Fatalf("An error as occured: %v", err)
 	}
-
-	fmt.Printf("the account %v", s)
 }
