@@ -12,7 +12,7 @@ const flagDataDir = "datadir"
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "popay",
-		Short: "Random name for a blockchain",
+		Short: "Popay your friends and family fast!",
 		Run:   func(cmd *cobra.Command, args []string) { fmt.Println("Popay your friends!") },
 	}
 
