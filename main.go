@@ -85,6 +85,10 @@ func main() {
 }
 
 func indexHandler(w io.Writer, fileNames []string) {
-	s := strings.Join(fileNames, " ")
-	fmt.Fprintf(w, "File name is: %s", s)
+	var sb strings.Builder
+	for _, n := range fileNames {
+		sb.WriteString(n)
+		sb.WriteString("\n")
+	}
+	fmt.Fprintf(w, "File name is: %s", sb.String())
 }
