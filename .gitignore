@@ -18,4 +18,4 @@
 tx.json
 blocks.json
 .db
-env_variables.yaml
+app.yaml
