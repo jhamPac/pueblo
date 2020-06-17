@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+
+	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
 )
 
 // import (
@@ -30,6 +34,33 @@ import (
 var secret string
 
 func main() {
+	ctx := context.Background()
+
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+	defer client.Close()
+
+	bucketName := os.Getenv("STORAGE_BUCKET")
+
+	bucket := client.Bucket(bucketName)
+	query := &storage.Query{}
+	it := bucket.Objects(ctx, query)
+
+	for {
+		attrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(attrs.Name)
+	}
+	////////////////////////////////////////
+
 	secret = os.Getenv("SECRET")
 	http.HandleFunc("/", indexHandler)
 
