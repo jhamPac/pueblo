@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
@@ -31,8 +33,6 @@ import (
 
 // }
 
-var secret string
-
 func main() {
 	ctx := context.Background()
 
@@ -48,6 +48,8 @@ func main() {
 	query := &storage.Query{}
 	it := bucket.Objects(ctx, query)
 
+	var names []string
+
 	for {
 		attrs, err := it.Next()
 		if err == iterator.Done {
@@ -57,12 +59,18 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(attrs.Name)
+
+		names = append(names, attrs.Name)
 	}
 	////////////////////////////////////////
 
-	secret = os.Getenv("SECRET")
-	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		indexHandler(w, names)
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -76,10 +84,7 @@ func main() {
 	}
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-	fmt.Fprintf(w, "The secret is %v", secret)
+func indexHandler(w io.Writer, fileNames []string) {
+	s := strings.Join(fileNames, " ")
+	fmt.Fprintf(w, "File name is: %s", s)
 }
