@@ -90,5 +90,5 @@ func indexHandler(w io.Writer, fileNames []string) {
 		sb.WriteString(n)
 		sb.WriteString("\n")
 	}
-	fmt.Fprintf(w, "File name is: %s", sb.String())
+	fmt.Fprintf(w, "Files avaiable: %s\n", sb.String())
 }
