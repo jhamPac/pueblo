@@ -9,7 +9,7 @@ import (
 	"github.com/jhampac/pueblo/database"
 )
 
-const httpPort = 80
+const httpPort = 8080
 
 // ErrRes custom error type to write to responses
 type ErrRes struct {
