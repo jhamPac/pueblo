@@ -9,7 +9,7 @@ import (
 	"github.com/jhampac/pueblo/database"
 )
 
-const httpPort = 8080
+const httpPort = 9000
 
 // ErrRes custom error type to write to responses
 type ErrRes struct {
@@ -56,6 +56,7 @@ func Run(dataDir string) error {
 		fmt.Fprintf(w, "Popay your friends and family fast!")
 	})
 
+	fmt.Printf("Popay listening on port: %v\n", httpPort)
 	return http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
 }
 
