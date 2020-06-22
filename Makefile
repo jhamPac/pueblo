@@ -2,4 +2,4 @@ start:
 	go run main.go
 
 install:
-	go install $$PWD/cmd/popay
+	go install $$HOME/go/src/github.com/jhampac/pueblo/cmd/popay
