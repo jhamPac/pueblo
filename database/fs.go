@@ -81,7 +81,7 @@ func ExpandPath(p string) string {
 		return p
 	}
 
-	if strings.HasPrefix(p, "~/") || strings.HasPrefix(p, "~\\") {
+	if strings.HasPrefix(p, "/") || strings.HasPrefix(p, "~/") || strings.HasPrefix(p, "~\\") {
 		if home := homeDir(); home != "" {
 			p = home + p[1:]
 		}
