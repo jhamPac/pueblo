@@ -19,7 +19,7 @@ func main() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(balancesCmd())
 	rootCmd.AddCommand(txCmd())
-	rootCmd.AddCommand(migrateCmd)
+	rootCmd.AddCommand(migrateCmd())
 	rootCmd.AddCommand(runCmd())
 
 	if err := rootCmd.Execute(); err != nil {
