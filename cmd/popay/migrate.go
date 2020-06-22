@@ -26,8 +26,8 @@ var migrateCmd = &cobra.Command{
 			1,
 			uint64(time.Now().Unix()),
 			[]database.Tx{
-				database.NewTx("redcloud", "redcloud", 3, ""),
-				database.NewTx("redcloud", "redcloud", 700, "reward"),
+				database.NewTx("alice", "bob", 100000, ""),
+				database.NewTx("alice", "eve", 100000, ""),
 			},
 		)
 
@@ -39,12 +39,11 @@ var migrateCmd = &cobra.Command{
 			2,
 			uint64(time.Now().Unix()),
 			[]database.Tx{
-				database.NewTx("redcloud", "sittingbull", 2000, ""),
-				database.NewTx("redcloud", "redcloud", 100, "reward"),
-				database.NewTx("sittingbull", "redcloud", 10, ""),
-				database.NewTx("sittingbull", "woundedknee", 1000, ""),
-				database.NewTx("sittingbull", "redcloud", 50, ""),
-				database.NewTx("redcloud", "redcloud", 700, "reward"),
+				database.NewTx("alice", "alice", 1000, "reward"),
+				database.NewTx("alice", "alice", 1000, "reward"),
+				database.NewTx("alice", "alice", 1000, "reward"),
+				database.NewTx("alice", "alice", 1000, "reward"),
+				database.NewTx("alice", "alice", 1000, "reward"),
 			},
 		)
 
