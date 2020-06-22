@@ -13,7 +13,9 @@ type State struct {
 	Balances  map[Account]uint
 	txMempool []Tx
 
-	dbFile          *os.File
+	dbFile *os.File
+
+	latestBlock     Block
 	latestBlockHash Hash
 }
 
@@ -64,7 +66,18 @@ func (s *State) applyBlock(b Block) error {
 
 // Persist the Mempool to the dbFile
 func (s *State) Persist() (Hash, error) {
-	block := NewBlock(s.latestBlockHash, uint64(time.Now().Unix()), s.txMempool)
+	latestBlockHash, err := s.latestBlock.Hash()
+	if err != nil {
+		return Hash{}, err
+	}
+
+	block := NewBlock(
+		s.latestBlockHash,
+		s.latestBlock.Header.Number+1,
+		uint64(time.Now().Unix()),
+		s.txMempool,
+	)
+
 	blockHash, err := block.Hash()
 	if err != nil {
 		return Hash{}, nil
@@ -84,16 +97,21 @@ func (s *State) Persist() (Hash, error) {
 		return Hash{}, nil
 	}
 
-	s.latestBlockHash = blockHash
-
+	s.latestBlockHash = latestBlockHash
+	s.latestBlock = block
 	s.txMempool = []Tx{}
 
-	return s.latestBlockHash, nil
+	return latestBlockHash, nil
 }
 
 // Close the dbfile that State uses for mempool
 func (s *State) Close() error {
 	return s.dbFile.Close()
+}
+
+// LatestBlock returns the most recent block created
+func (s *State) LatestBlock() Block {
+	return s.latestBlock
 }
 
 // LatestBlockHash return the most recent block hash
@@ -103,6 +121,8 @@ func (s *State) LatestBlockHash() Hash {
 
 // NewStateFromDisk creates State with a genesis file
 func NewStateFromDisk(dataDir string) (*State, error) {
+	dataDir = ExpandPath(dataDir)
+
 	err := initDataDirIfNotExists(dataDir)
 	if err != nil {
 		return nil, err
@@ -125,7 +145,7 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 	}
 
 	scanner := bufio.NewScanner(f)
-	state := &State{balances, make([]Tx, 0), f, Hash{}}
+	state := &State{balances, make([]Tx, 0), f, Block{}, Hash{}}
 
 	// replay all the transactions
 	for scanner.Scan() {
@@ -134,6 +154,11 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 		}
 
 		blockFsJSON := scanner.Bytes()
+
+		if len(blockFsJSON) == 0 {
+			break
+		}
+
 		var blockFs BlockFS
 		err = json.Unmarshal(blockFsJSON, &blockFs)
 		if err != nil {
@@ -145,6 +170,7 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 			return nil, err
 		}
 
+		state.latestBlock = blockFs.Value
 		state.latestBlockHash = blockFs.Key
 	}
 
