@@ -23,6 +23,7 @@ var migrateCmd = &cobra.Command{
 
 		block0 := database.NewBlock(
 			database.Hash{},
+			1,
 			uint64(time.Now().Unix()),
 			[]database.Tx{
 				database.NewTx("redcloud", "redcloud", 3, ""),
@@ -35,6 +36,7 @@ var migrateCmd = &cobra.Command{
 
 		block1 := database.NewBlock(
 			block0hash,
+			2,
 			uint64(time.Now().Unix()),
 			[]database.Tx{
 				database.NewTx("redcloud", "sittingbull", 2000, ""),
