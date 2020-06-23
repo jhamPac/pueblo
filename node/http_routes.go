@@ -32,14 +32,16 @@ type TxAddRes struct {
 
 // StatusRes displays the status of a Node
 type StatusRes struct {
-	Hash   database.Hash `json:"block_hash"`
-	Number uint64        `json:"block_number"`
+	Hash       database.Hash `json:"block_hash"`
+	Number     uint64        `json:"block_number"`
+	KnownPeers []PeerNode    `json:"known_peers"`
 }
 
-func statusHandler(w http.ResponseWriter, r *http.Request, state *database.State) {
+func statusHandler(w http.ResponseWriter, r *http.Request, node *Node) {
 	res := StatusRes{
-		Hash:   state.LatestBlockHash(),
-		Number: state.LatestBlock().Header.Number,
+		Hash:       node.state.LatestBlockHash(),
+		Number:     node.state.LatestBlock().Header.Number,
+		KnownPeers: node.knownPeers,
 	}
 	writeRes(w, res)
 }

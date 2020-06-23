@@ -55,7 +55,7 @@ func (n *Node) Run() error {
 	n.state = state
 
 	http.HandleFunc("/node/status", func(w http.ResponseWriter, r *http.Request) {
-		statusHandler(w, r, state)
+		statusHandler(w, r, n)
 	})
 
 	http.HandleFunc("/balances/list", func(w http.ResponseWriter, r *http.Request) {
