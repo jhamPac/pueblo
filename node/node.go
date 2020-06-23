@@ -1,6 +1,7 @@
 package node
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 
 // DefaultHTTPort can be configured
 const DefaultHTTPort = 9000
+const endpointStatus = "/node/status"
 
 //PeerNode is a Node with identifying properties for the calling Node
 type PeerNode struct {
@@ -18,6 +20,11 @@ type PeerNode struct {
 	IsActive    bool   `json:"is_active"`
 }
 
+// TCPAddress returns the IP address and port number for communication
+func (pn PeerNode) TCPAddress() string {
+	return fmt.Sprintf("%s:%d", pn.IP, pn.Port)
+}
+
 // Node is a container on which services can be registered
 type Node struct {
 	dataDir string
@@ -25,15 +32,18 @@ type Node struct {
 
 	state *database.State
 
-	knownPeers []PeerNode
+	knownPeers map[string]PeerNode
 }
 
 // New creates a new Node instance
 func New(dataDir string, port uint64, bootstrap PeerNode) *Node {
+	knownPeers := make(map[string]PeerNode)
+	knownPeers[bootstrap.TCPAddress()] = bootstrap
+
 	return &Node{
 		dataDir:    dataDir,
 		port:       port,
-		knownPeers: []PeerNode{bootstrap},
+		knownPeers: knownPeers,
 	}
 }
 
@@ -44,6 +54,7 @@ func NewPeerNode(ip string, port uint64, isBootstrap bool, isActive bool) PeerNo
 
 // Run fires up a Node instance
 func (n *Node) Run() error {
+	ctx := context.Background()
 	fmt.Println(fmt.Sprintf("Listening on HTTP port: %d", n.port))
 
 	state, err := database.NewStateFromDisk(n.dataDir)
@@ -54,7 +65,9 @@ func (n *Node) Run() error {
 
 	n.state = state
 
-	http.HandleFunc("/node/status", func(w http.ResponseWriter, r *http.Request) {
+	go n.sync(ctx)
+
+	http.HandleFunc(endpointStatus, func(w http.ResponseWriter, r *http.Request) {
 		statusHandler(w, r, n)
 	})
 
