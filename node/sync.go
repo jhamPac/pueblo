@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -25,20 +26,38 @@ func (n *Node) fetchAndSync() {
 		status, err := queryPeerStatus(peer)
 		if err != nil {
 			fmt.Printf("ERROR: %s\n", err)
+			continue
 		}
 
+		// just counts new blocks for right now
 		localBlockNumber := n.state.LatestBlock().Header.Number
 		if localBlockNumber < status.Number {
 			newBlocksCount := status.Number - localBlockNumber
 			fmt.Printf("Found %d new blocks from Peer %s\n", newBlocksCount, peer.IP)
 		}
 
-		for _, statusPeer := range status.KnownPeers {
-			newPeer, isKnownPeer := n.knownPeers[statusPeer.TCPAddress()]
+		// looks for new peers
+		for _, uPeer := range status.KnownPeers {
+			_, isKnownPeer := n.knownPeers[uPeer.TCPAddress()]
 			if !isKnownPeer {
-				fmt.Printf("Found new Peer %s\n", peer.TCPAddress())
-				n.knownPeers[statusPeer.TCPAddress()] = newPeer
+				fmt.Printf("Found new Peer %s\n", uPeer.TCPAddress())
+				n.knownPeers[uPeer.TCPAddress()] = uPeer
 			}
 		}
 	}
+}
+
+func queryPeerStatus(peer PeerNode) (StatusRes, error) {
+	url := fmt.Sprintf("http://%s:%s", peer.TCPAddress(), endpointStatus)
+	res, err := http.Get(url)
+	if err != nil {
+		return StatusRes{}, err
+	}
+
+	statusRes := StatusRes{}
+	err = readRes(res, &statusRes)
+	if err != nil {
+		return StatusRes{}, err
+	}
+	return statusRes, nil
 }
