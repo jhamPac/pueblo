@@ -37,6 +37,29 @@ type StatusRes struct {
 	KnownPeers map[string]PeerNode `json:"known_peers"`
 }
 
+// SyncRes displays the synced blocks
+type SyncRes struct {
+	Blocks []database.Block `json:"blocks"`
+}
+
+func syncHandler(w http.ResponseWriter, * r http.Request, dataDir string) {
+	reqHash := r.URL.Query().Get(endpointSyncQueryKeyFromBlock)
+
+	hash := database.Hash{}
+	err := hash.UnmarshalText([]byte(reqHash))
+	if err != nil {
+		writeErrRes(w, err)
+		return
+	}
+
+	blocks, err := database.GetBlocksAfter(hash, dataDir)
+	if err != nil {
+		writeErrRes(w, err)
+		return
+	}
+	writeRes(w, SyncRes{Blocks: blocks})
+}
+
 func statusHandler(w http.ResponseWriter, r *http.Request, node *Node) {
 	res := StatusRes{
 		Hash:       node.state.LatestBlockHash(),

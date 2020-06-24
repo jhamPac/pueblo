@@ -11,6 +11,8 @@ import (
 // DefaultHTTPort can be configured
 const DefaultHTTPort = 9000
 const endpointStatus = "/node/status"
+const endpointSync = "/node/sync"
+const endpointSyncQueryKeyFromBlock = "fromBlock"
 
 //PeerNode is a Node with identifying properties for the calling Node
 type PeerNode struct {
@@ -66,6 +68,10 @@ func (n *Node) Run() error {
 	n.state = state
 
 	go n.sync(ctx)
+
+	http.HandleFunc(endpointSync, func(w http.ResponseWriter, r *http.Request) {
+		syncHandler(w, r, n.dataDir)
+	})
 
 	http.HandleFunc(endpointStatus, func(w http.ResponseWriter, r *http.Request) {
 		statusHandler(w, r, n)
