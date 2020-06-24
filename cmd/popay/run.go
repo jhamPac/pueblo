@@ -13,7 +13,6 @@ func runCmd() *cobra.Command {
 		Use:   "run",
 		Short: "Launches the Popay node and its HTTP API.",
 		Run: func(cmd *cobra.Command, args []string) {
-			dataDir, _ := cmd.Flags().GetString(flagDataDir)
 			port, _ := cmd.Flags().GetUint64(flagPort)
 
 			fmt.Println("Launching Popay node and its HTTP API...")
@@ -25,7 +24,7 @@ func runCmd() *cobra.Command {
 				true,
 			)
 
-			n := node.New(dataDir, port, bootstrap)
+			n := node.New(getDataDirFromCmd(cmd), port, bootstrap)
 
 			err := n.Run()
 			if err != nil {
