@@ -42,10 +42,11 @@ type SyncRes struct {
 	Blocks []database.Block `json:"blocks"`
 }
 
-func syncHandler(w http.ResponseWriter, * r http.Request, dataDir string) {
+func syncHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
 	reqHash := r.URL.Query().Get(endpointSyncQueryKeyFromBlock)
 
 	hash := database.Hash{}
+	// hash is the type in Hash which implements UnmarshalText
 	err := hash.UnmarshalText([]byte(reqHash))
 	if err != nil {
 		writeErrRes(w, err)
