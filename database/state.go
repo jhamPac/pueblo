@@ -72,7 +72,7 @@ func (s *State) Persist() (Hash, error) {
 	}
 
 	block := NewBlock(
-		s.latestBlockHash,
+		latestBlockHash,
 		s.latestBlock.Header.Number+1,
 		uint64(time.Now().Unix()),
 		s.txMempool,
@@ -121,8 +121,6 @@ func (s *State) LatestBlockHash() Hash {
 
 // NewStateFromDisk creates State with a genesis file
 func NewStateFromDisk(dataDir string) (*State, error) {
-	dataDir = ExpandPath(dataDir)
-
 	err := initDataDirIfNotExists(dataDir)
 	if err != nil {
 		return nil, err
