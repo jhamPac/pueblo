@@ -173,7 +173,7 @@ func applyBlock(b Block, s State) error {
 // applyTXs iterates through each txs and passes it to applyTx to be applied
 func applyTXs(txs []Tx, s *State) error {
 	for _, tx := range txs {
-		err := applyTx(tx, s)
+		err := updateBalances(tx, s)
 		if err != nil {
 			return err
 		}
@@ -181,7 +181,7 @@ func applyTXs(txs []Tx, s *State) error {
 	return nil
 }
 
-func applyTx(tx Tx, s *State) error {
+func updateBalances(tx Tx, s *State) error {
 	if tx.IsReward() {
 		s.Balances[tx.To] += tx.Value
 		return nil
