@@ -7,7 +7,7 @@ import (
 )
 
 const major = "0"
-const minor = "1"
+const minor = "7"
 const patch = "0"
 const description = "TX Add && Balances List"
 
