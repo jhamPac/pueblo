@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"os"
+	"reflect"
 )
 
 // GetBlocksAfter syncs with all blocks after a specified Hash
@@ -15,6 +16,11 @@ func GetBlocksAfter(blockHash Hash, dataDir string) ([]Block, error) {
 
 	blocks := make([]Block, 0)
 	shouldStartCollecting := false
+
+	if reflect.DeepEqual(blockHash, Hash{}) {
+		shouldStartCollecting = true
+	}
+
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
