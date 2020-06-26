@@ -62,7 +62,7 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 			return nil, err
 		}
 
-		err = state.applyTXs(blockFs.Value.TXs, state)
+		err = applyTXs(blockFs.Value.TXs, state)
 		if err != nil {
 			return nil, err
 		}
