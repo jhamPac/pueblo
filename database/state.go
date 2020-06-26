@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 )
 
 // State encapsulates all the business logic of the chain
@@ -153,8 +154,20 @@ func (s *State) LatestBlockHash() Hash {
 	return s.latestBlockHash
 }
 
+// applyBlock is a validation layer for incoming blocks
 func applyBlock(b Block, s State) error {
+	nextExpectedBlockNumber := s.latestBlock.Header.Number + 1
 
+	if b.Header.Number != nextExpectedBlockNumber {
+		return fmt.Errorf("next expected block must be %d not %d", nextExpectedBlockNumber, b.Header.Number)
+	}
+
+	// validate the incoming block parent hash equals the current hash
+	if s.latestBlock.Header.Number > 0 && !reflect.DeepEqual(b.Header.Parent, s.latestBlockHash) {
+		return fmt.Errorf("next block parent hash must be '%x' not '%x'", s.latestBlockHash, b.Header.Parent)
+	}
+
+	return applyTXs(b.TXs, &s)
 }
 
 func applyTXs(txs []Tx, s *State) error {
