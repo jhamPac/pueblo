@@ -19,6 +19,62 @@ type State struct {
 	latestBlockHash Hash
 }
 
+// NewStateFromDisk creates State with a genesis file
+func NewStateFromDisk(dataDir string) (*State, error) {
+	err := initDataDirIfNotExists(dataDir)
+	if err != nil {
+		return nil, err
+	}
+
+	gen, err := loadGenesis(getGenesisJSONFilePath(dataDir))
+	if err != nil {
+		return nil, err
+	}
+
+	// create the starting point or beginning state of balances
+	balances := make(map[Account]uint)
+	for account, balance := range gen.Balances {
+		balances[account] = balance
+	}
+
+	f, err := os.OpenFile(getBlocksDbFilePath(dataDir), os.O_APPEND|os.O_RDWR, 0600)
+	if err != nil {
+		return nil, err
+	}
+
+	scanner := bufio.NewScanner(f)
+	state := &State{balances, make([]Tx, 0), f, Block{}, Hash{}}
+
+	// replay all the transactions
+	for scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return nil, err
+		}
+
+		blockFsJSON := scanner.Bytes()
+
+		if len(blockFsJSON) == 0 {
+			break
+		}
+
+		var blockFs BlockFS
+		err = json.Unmarshal(blockFsJSON, &blockFs)
+		if err != nil {
+			return nil, err
+		}
+
+		err = state.applyTXs(blockFs.Value.TXs, state)
+		if err != nil {
+			return nil, err
+		}
+
+		state.latestBlock = blockFs.Value
+		state.latestBlockHash = blockFs.Key
+	}
+
+	return state, nil
+}
+
 // AddTx adds a Tx during the AddBlock process
 func (s *State) AddTx(tx Tx) error {
 	if err := s.apply(tx); err != nil {
@@ -117,60 +173,4 @@ func (s *State) LatestBlock() Block {
 // LatestBlockHash return the most recent block hash
 func (s *State) LatestBlockHash() Hash {
 	return s.latestBlockHash
-}
-
-// NewStateFromDisk creates State with a genesis file
-func NewStateFromDisk(dataDir string) (*State, error) {
-	err := initDataDirIfNotExists(dataDir)
-	if err != nil {
-		return nil, err
-	}
-
-	gen, err := loadGenesis(getGenesisJSONFilePath(dataDir))
-	if err != nil {
-		return nil, err
-	}
-
-	// create the starting point or beginning state of balances
-	balances := make(map[Account]uint)
-	for account, balance := range gen.Balances {
-		balances[account] = balance
-	}
-
-	f, err := os.OpenFile(getBlocksDbFilePath(dataDir), os.O_APPEND|os.O_RDWR, 0600)
-	if err != nil {
-		return nil, err
-	}
-
-	scanner := bufio.NewScanner(f)
-	state := &State{balances, make([]Tx, 0), f, Block{}, Hash{}}
-
-	// replay all the transactions
-	for scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			return nil, err
-		}
-
-		blockFsJSON := scanner.Bytes()
-
-		if len(blockFsJSON) == 0 {
-			break
-		}
-
-		var blockFs BlockFS
-		err = json.Unmarshal(blockFsJSON, &blockFs)
-		if err != nil {
-			return nil, err
-		}
-
-		err = state.applyBlock(blockFs.Value)
-		if err != nil {
-			return nil, err
-		}
-
-		state.latestBlock = blockFs.Value
-		state.latestBlockHash = blockFs.Key
-	}
-
-	return state, nil
 }
