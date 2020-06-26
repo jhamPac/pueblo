@@ -8,18 +8,27 @@ import (
 	"github.com/jhampac/pueblo/database"
 )
 
+// DefaultIP for a node
+const DefaultIP = "127.0.0.1"
+
 // DefaultHTTPort can be configured
 const DefaultHTTPort = 9000
 const endpointStatus = "/node/status"
+
 const endpointSync = "/node/sync"
 const endpointSyncQueryKeyFromBlock = "fromBlock"
+
+const endpointAddPeer = "/node/peer"
+const endpointAddPeerQueryKeyIP = "ip"
+const endpointAddPeerQueryKeyPort = "port"
 
 //PeerNode is a Node with identifying properties for the calling Node
 type PeerNode struct {
 	IP          string `json:"ip"`
 	Port        uint64 `json:"port"`
 	IsBootstrap bool   `json:"is_bootstrap"`
-	IsActive    bool   `json:"is_active"`
+
+	connected bool
 }
 
 // TCPAddress returns the IP address and port number for communication
@@ -30,6 +39,7 @@ func (pn PeerNode) TCPAddress() string {
 // Node is a container on which services can be registered
 type Node struct {
 	dataDir string
+	ip      string
 	port    uint64
 
 	state *database.State
@@ -38,26 +48,27 @@ type Node struct {
 }
 
 // New creates a new Node instance
-func New(dataDir string, port uint64, bootstrap PeerNode) *Node {
+func New(dataDir string, ip string, port uint64, bootstrap PeerNode) *Node {
 	knownPeers := make(map[string]PeerNode)
 	knownPeers[bootstrap.TCPAddress()] = bootstrap
 
 	return &Node{
 		dataDir:    dataDir,
+		ip:         ip,
 		port:       port,
 		knownPeers: knownPeers,
 	}
 }
 
 // NewPeerNode creates a new PeerNode instance
-func NewPeerNode(ip string, port uint64, isBootstrap bool, isActive bool) PeerNode {
-	return PeerNode{ip, port, isBootstrap, isActive}
+func NewPeerNode(ip string, port uint64, isBootstrap bool, connected bool) PeerNode {
+	return PeerNode{ip, port, isBootstrap, connected}
 }
 
 // Run fires up a Node instance
 func (n *Node) Run() error {
 	ctx := context.Background()
-	fmt.Println(fmt.Sprintf("Listening on HTTP port: %d", n.port))
+	fmt.Println(fmt.Sprintf("Listening on: %s:%d", n.ip, n.port))
 
 	state, err := database.NewStateFromDisk(n.dataDir)
 	if err != nil {
@@ -77,6 +88,10 @@ func (n *Node) Run() error {
 		statusHandler(w, r, n)
 	})
 
+	http.HandleFunc(endpointAddPeer, func(w http.ResponseWriter, r *http.Request) {
+		addPeerHandler(w, r, n)
+	})
+
 	http.HandleFunc("/balances/list", func(w http.ResponseWriter, r *http.Request) {
 		listBalancesHandler(w, r, state)
 	})
@@ -90,5 +105,24 @@ func (n *Node) Run() error {
 		fmt.Fprintf(w, "Popay your friends and family fast!")
 	})
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", n.port), nil)
+	return http.ListenAndServe(fmt.Sprintf("%s:%d", n.ip, n.port), nil)
+}
+
+// AddPeer if not in known peers
+func (n *Node) AddPeer(peer PeerNode) {
+	n.knownPeers[peer.TCPAddress()] = peer
+}
+
+// RemovePeer from knownpeers
+func (n *Node) RemovePeer(peer PeerNode) {
+	delete(n.knownPeers, peer.TCPAddress())
+}
+
+// IsKnownPeer checks weather the peer is in known peers
+func (n *Node) IsKnownPeer(peer PeerNode) bool {
+	if peer.IP == n.ip && peer.Port == n.port {
+		return true
+	}
+	_, isKnownPeer := n.knownPeers[peer.TCPAddress()]
+	return isKnownPeer
 }

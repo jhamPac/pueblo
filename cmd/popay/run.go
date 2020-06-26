@@ -13,6 +13,7 @@ func runCmd() *cobra.Command {
 		Use:   "run",
 		Short: "Launches the Popay node and its HTTP API.",
 		Run: func(cmd *cobra.Command, args []string) {
+			ip, _ := cmd.Flags().GetString(flagIP)
 			port, _ := cmd.Flags().GetUint64(flagPort)
 
 			fmt.Println("Launching Popay node and its HTTP API...")
