@@ -22,11 +22,10 @@ func runCmd() *cobra.Command {
 				"34.83.161.134",
 				9000,
 				true,
-				true,
+				false,
 			)
 
-			n := node.New(getDataDirFromCmd(cmd), port, bootstrap)
-
+			n := node.New(getDataDirFromCmd(cmd), ip, port, bootstrap)
 			err := n.Run()
 			if err != nil {
 				fmt.Println(err)
@@ -36,6 +35,7 @@ func runCmd() *cobra.Command {
 	}
 
 	addDefaultRequiredFlags(cmd)
+	cmd.Flags().String(flagIP, node.DefaultIP, "exposed IP for communication with peers")
 	cmd.Flags().Uint64(flagPort, node.DefaultHTTPort, "exposed HTTP port for communication with peers")
 	return cmd
 }
