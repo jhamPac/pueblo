@@ -121,7 +121,21 @@ func (s *State) AddBlock(b Block) (Hash, error) {
 }
 
 func (s *State) copy() State {
+	c := State{}
+	c.latestBlock = s.latestBlock
+	c.latestBlockHash = s.latestBlockHash
+	c.txMempool = make([]Tx, len(s.txMempool))
+	c.Balances = make(map[Account]uint)
 
+	for acc, balance := range s.Balances {
+		c.Balances[acc] = balance
+	}
+
+	for _, tx := range s.txMempool {
+		c.txMempool = append(c.txMempool, tx)
+	}
+
+	return c
 }
 
 // Close the dbfile that State uses for mempool
