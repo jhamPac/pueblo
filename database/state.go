@@ -74,22 +74,58 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 	return state, nil
 }
 
+// AddBlocks iterates over a slice of Block types and adds them to state
+func (s *State) AddBlocks(blocks []Block) error {
+	for _, b := range blocks {
+		_, err := s.AddBlock(b)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AddBlock adds a new Block to the db chain
+func (s *State) AddBlock(b Block) (Hash, error) {
+	pendingState != s.copy()
+
+	err := applyBlock(b, pendingState)
+	if err != nil {
+		return Hash{}, err
+	}
+
+	blockHash, err := b.Hash()
+	if err != nil {
+		return Hash{}, err
+	}
+
+	bFS := BlockFS{blockHash, b}
+	bFSJSON, err := json.Marshal(bFS)
+	if err != nil {
+		return Hash{}, err
+	}
+
+	fmt.Printf("Persisting new Block to disk:\n")
+	fmt.Printf("\t%s\n", bFSJSON)
+
+	_, err = s.dbFile.Write(append(bFSJSON, '\n'))
+	if err != nil {
+		return Hash{}, err
+	}
+
+	s.Balances = pendingState.Balances
+	s.latestBlockHash = blockHash
+	s.latestBlock = b
+
+	return blockHash, nil
+}
+
 // AddTx adds a Tx during the AddBlock process
 func (s *State) AddTx(tx Tx) error {
 	if err := s.apply(tx); err != nil {
 		return err
 	}
 	s.txMempool = append(s.txMempool, tx)
-	return nil
-}
-
-// AddBlock adds a new Block to the db chain
-func (s *State) AddBlock(b Block) error {
-	for _, tx := range b.TXs {
-		if err := s.AddTx(tx); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
