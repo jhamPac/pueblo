@@ -170,10 +170,29 @@ func applyBlock(b Block, s State) error {
 	return applyTXs(b.TXs, &s)
 }
 
+// applyTXs iterates through each txs and passes it to applyTx to be applied
 func applyTXs(txs []Tx, s *State) error {
-
+	for _, tx := range txs {
+		err := applyTx(tx, s)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func applyTx(tx Tx, s *State) error {
+	if tx.IsReward() {
+		s.Balances[tx.To] += tx.Value
+		return nil
+	}
 
+	if tx.Value > s.Balances[tx.From] {
+		return fmt.Errorf("transaction error: Sender %q balance is %d and the request sent amount is %d", tx.From, s.Balances[tx.From], tx.Value)
+	}
+
+	s.Balances[tx.From] -= tx.Value
+	s.Balances[tx.To] += tx.Value
+
+	return nil
 }
