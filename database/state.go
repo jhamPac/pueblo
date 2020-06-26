@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 )
 
 // State encapsulates all the business logic of the chain
@@ -118,46 +117,6 @@ func (s *State) applyBlock(b Block) error {
 	}
 
 	return nil
-}
-
-// Persist the Mempool to the dbFile
-func (s *State) Persist() (Hash, error) {
-	latestBlockHash, err := s.latestBlock.Hash()
-	if err != nil {
-		return Hash{}, err
-	}
-
-	block := NewBlock(
-		latestBlockHash,
-		s.latestBlock.Header.Number+1,
-		uint64(time.Now().Unix()),
-		s.txMempool,
-	)
-
-	blockHash, err := block.Hash()
-	if err != nil {
-		return Hash{}, nil
-	}
-
-	blockFs := BlockFS{blockHash, block}
-
-	blockFsJSON, err := json.Marshal(blockFs)
-	if err != nil {
-		return Hash{}, err
-	}
-
-	fmt.Println("Persisting new Block to disk:")
-	fmt.Printf("\t%s\n", blockFsJSON)
-
-	if _, err = s.dbFile.Write(append(blockFsJSON, '\n')); err != nil {
-		return Hash{}, nil
-	}
-
-	s.latestBlockHash = latestBlockHash
-	s.latestBlock = block
-	s.txMempool = []Tx{}
-
-	return latestBlockHash, nil
 }
 
 // Close the dbfile that State uses for mempool
