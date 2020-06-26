@@ -87,7 +87,7 @@ func (s *State) AddBlocks(blocks []Block) error {
 
 // AddBlock adds a new Block to the db chain
 func (s *State) AddBlock(b Block) (Hash, error) {
-	pendingState != s.copy()
+	pendingState := s.copy()
 
 	err := applyBlock(b, pendingState)
 	if err != nil {
@@ -120,39 +120,8 @@ func (s *State) AddBlock(b Block) (Hash, error) {
 	return blockHash, nil
 }
 
-// AddTx adds a Tx during the AddBlock process
-func (s *State) AddTx(tx Tx) error {
-	if err := s.apply(tx); err != nil {
-		return err
-	}
-	s.txMempool = append(s.txMempool, tx)
-	return nil
-}
+func (s *State) copy() State {
 
-func (s *State) apply(tx Tx) error {
-	if tx.IsReward() {
-		s.Balances[tx.To] += tx.Value
-		return nil
-	}
-
-	if tx.Value > s.Balances[tx.From] {
-		return fmt.Errorf("insufficient funds")
-	}
-
-	s.Balances[tx.From] -= tx.Value
-	s.Balances[tx.To] += tx.Value
-
-	return nil
-}
-
-func (s *State) applyBlock(b Block) error {
-	for _, tx := range b.TXs {
-		if err := s.apply(tx); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // Close the dbfile that State uses for mempool
@@ -168,4 +137,16 @@ func (s *State) LatestBlock() Block {
 // LatestBlockHash return the most recent block hash
 func (s *State) LatestBlockHash() Hash {
 	return s.latestBlockHash
+}
+
+func applyBlock(b Block, s State) error {
+
+}
+
+func applyTXs(txs []Tx, s *State) error {
+
+}
+
+func applyTx(tx Tx, s *State) error {
+
 }
