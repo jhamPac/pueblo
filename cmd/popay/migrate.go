@@ -61,7 +61,7 @@ func migrateCmd() *cobra.Command {
 				state.NextBlockNumber(),
 				uint64(time.Now().Unix()),
 				[]database.Tx{
-					database.NewTx("alice", "bob", 500000, ""),
+					database.NewTx("alice", "bob", 50000, ""),
 					database.NewTx("alice", "eve", 50000, ""),
 				},
 			)
