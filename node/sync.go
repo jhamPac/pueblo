@@ -10,7 +10,7 @@ import (
 )
 
 func (n *Node) sync(ctx context.Context) error {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(15 * time.Second)
 
 	for {
 		select {
@@ -102,21 +102,30 @@ func (n *Node) joinKnowPeers(peer PeerNode) error {
 
 func (n *Node) syncBlocks(peer PeerNode, status StatusRes) error {
 	localBlocksNumber := n.state.LatestBlock().Header.Number
-	if localBlocksNumber < status.Number {
-		newBlocksCount := status.Number - localBlocksNumber
-		fmt.Printf("Found %d new blocks from Peer %s\n", newBlocksCount, peer.TCPAddress())
 
-		blocks, err := fetchBlocksFromPeer(peer, n.state.LatestBlockHash())
-		if err != nil {
-			return err
-		}
-
-		err = n.state.AddBlocks(blocks)
-		if err != nil {
-			return err
-		}
+	if status.Hash.IsEmpty() {
+		return nil
 	}
-	return nil
+
+	if status.Number < localBlocksNumber {
+		return nil
+	}
+
+	if status.Number == 0 && !n.state.LatestBlockHash().IsEmpty() {
+		return nil
+	}
+
+	newBlocksCount := status.Number - localBlocksNumber
+	if localBlocksNumber == 0 && status.Number == 0 {
+		newBlocksCount = 1
+	}
+	fmt.Printf("Found %d new blocks from Peer %s\n", newBlocksCount, peer.TCPAddress())
+
+	blocks, err := fetchBlocksFromPeer(peer, n.state.LatestBlockHash())
+	if err != nil {
+		return err
+	}
+	return n.state.AddBlocks(blocks)
 }
 
 func (n *Node) syncKnownPeers(peer PeerNode, status StatusRes) error {

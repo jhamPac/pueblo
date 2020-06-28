@@ -1,6 +1,7 @@
 package database
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -23,6 +24,12 @@ func (h *Hash) UnmarshalText(data []byte) error {
 // Hex returns the hash encoded as a string
 func (h Hash) Hex() string {
 	return hex.EncodeToString(h[:])
+}
+
+// IsEmpty checks weather a has is empty
+func (h Hash) IsEmpty() bool {
+	emptyHash := Hash{}
+	return bytes.Equal(emptyHash[:], h[:])
 }
 
 // BlockFS is ...
