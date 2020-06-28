@@ -81,7 +81,7 @@ func (n *Node) Run() error {
 	go n.sync(ctx)
 
 	http.HandleFunc(endpointSync, func(w http.ResponseWriter, r *http.Request) {
-		syncHandler(w, r, n.dataDir)
+		syncHandler(w, r, n)
 	})
 
 	http.HandleFunc(endpointStatus, func(w http.ResponseWriter, r *http.Request) {
