@@ -17,6 +17,7 @@ type State struct {
 
 	latestBlock     Block
 	latestBlockHash Hash
+	hasGenesisBlock bool
 }
 
 // NewStateFromDisk creates State with a genesis file
@@ -43,7 +44,7 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 	}
 
 	scanner := bufio.NewScanner(f)
-	state := &State{balances, make([]Tx, 0), f, Block{}, Hash{}}
+	state := &State{balances, make([]Tx, 0), f, Block{}, Hash{}, false}
 
 	// replay all the transactions
 	for scanner.Scan() {
@@ -70,6 +71,7 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 
 		state.latestBlock = blockFs.Value
 		state.latestBlockHash = blockFs.Key
+		state.hasGenesisBlock = true
 	}
 
 	return state, nil
@@ -123,6 +125,7 @@ func (s *State) AddBlock(b Block) (Hash, error) {
 
 func (s *State) copy() State {
 	c := State{}
+	c.hasGenesisBlock = s.hasGenesisBlock
 	c.latestBlock = s.latestBlock
 	c.latestBlockHash = s.latestBlockHash
 	c.txMempool = make([]Tx, len(s.txMempool))
@@ -154,16 +157,25 @@ func (s *State) LatestBlockHash() Hash {
 	return s.latestBlockHash
 }
 
+// NextBlockNumber return the block number from the state
+func (s *State) NextBlockNumber() uint64 {
+	// when would it ever not have the genesis block?
+	if !s.hasGenesisBlock {
+		return uint64(0)
+	}
+	return s.LatestBlock().Header.Number + 1
+}
+
 // applyBlock is a validation layer for incoming blocks
 func applyBlock(b Block, s State) error {
 	nextExpectedBlockNumber := s.latestBlock.Header.Number + 1
 
-	if b.Header.Number != nextExpectedBlockNumber {
+	if s.hasGenesisBlock && b.Header.Number != nextExpectedBlockNumber {
 		return fmt.Errorf("next expected block must be %d not %d", nextExpectedBlockNumber, b.Header.Number)
 	}
 
 	// validate the incoming block parent hash equals the current hash
-	if s.latestBlock.Header.Number > 0 && !reflect.DeepEqual(b.Header.Parent, s.latestBlockHash) {
+	if s.hasGenesisBlock && s.latestBlock.Header.Number > 0 && !reflect.DeepEqual(b.Header.Parent, s.latestBlockHash) {
 		return fmt.Errorf("next block parent hash must be '%x' not '%x'", s.latestBlockHash, b.Header.Parent)
 	}
 
