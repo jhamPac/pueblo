@@ -8,15 +8,52 @@ import (
 )
 
 func (n *Node) sync(ctx context.Context) error {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 
 	for {
 		select {
 		case <-ticker.C:
 			fmt.Println("Searching for new peers and blocks...")
-			n.fetchAndSync()
+			n.doSync()
 		case <-ctx.Done():
 			ticker.Stop()
+		}
+	}
+}
+
+func (n *Node) doSync() {
+	for _, peer := range n.knownPeers {
+		// if the node is itself
+		if n.ip == peer.IP && n.port == peer.Port {
+			continue
+		}
+
+		fmt.Printf("Searching for new Peers and their Blocks and Peers: %q\n", peer.TCPAddress())
+
+		status, err := queryPeerStatus(peer)
+		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+			fmt.Printf("Peer %q was removed from KnownPeers\n", peer.TCPAddress())
+			n.RemovePeer(peer)
+			continue
+		}
+
+		err = n.joinKnowPeers(peer)
+		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+			continue
+		}
+
+		err = n.syncBlocks(peer, status)
+		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+			continue
+		}
+
+		err = n.syncKnownPeers(peer, status)
+		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+			continue
 		}
 	}
 }
