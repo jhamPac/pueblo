@@ -20,6 +20,11 @@ func (h *Hash) UnmarshalText(data []byte) error {
 	return err
 }
 
+// Hex returns the hash encoded as a string
+func (h Hash) Hex() string {
+	return hex.EncodeToString(h[:])
+}
+
 // BlockFS is ...
 type BlockFS struct {
 	Key   Hash  `json:"hash"`
