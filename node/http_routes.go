@@ -42,6 +42,19 @@ type SyncRes struct {
 	Blocks []database.Block `json:"blocks"`
 }
 
+func listBalancesHandler(w http.ResponseWriter, r *http.Request, state *database.State) {
+	writeRes(w, BalancesRes{state.LatestBlockHash(), state.Balances})
+}
+
+func statusHandler(w http.ResponseWriter, r *http.Request, node *Node) {
+	res := StatusRes{
+		Hash:       node.state.LatestBlockHash(),
+		Number:     node.state.LatestBlock().Header.Number,
+		KnownPeers: node.knownPeers,
+	}
+	writeRes(w, res)
+}
+
 func syncHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
 	reqHash := r.URL.Query().Get(endpointSyncQueryKeyFromBlock)
 
@@ -59,19 +72,6 @@ func syncHandler(w http.ResponseWriter, r *http.Request, dataDir string) {
 		return
 	}
 	writeRes(w, SyncRes{Blocks: blocks})
-}
-
-func statusHandler(w http.ResponseWriter, r *http.Request, node *Node) {
-	res := StatusRes{
-		Hash:       node.state.LatestBlockHash(),
-		Number:     node.state.LatestBlock().Header.Number,
-		KnownPeers: node.knownPeers,
-	}
-	writeRes(w, res)
-}
-
-func listBalancesHandler(w http.ResponseWriter, r *http.Request, state *database.State) {
-	writeRes(w, BalancesRes{state.LatestBlockHash(), state.Balances})
 }
 
 func txAddHandler(w http.ResponseWriter, r *http.Request, state *database.State) {
