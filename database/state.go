@@ -174,7 +174,7 @@ func applyBlock(b Block, s State) error {
 		return fmt.Errorf("next expected block must be %d not %d", nextExpectedBlockNumber, b.Header.Number)
 	}
 
-	// validate the incoming block parent hash equals the current hash
+	// validate the incoming block parent hash equals the current hash; if this doesn't match then the chain is broken
 	if s.hasGenesisBlock && s.latestBlock.Header.Number > 0 && !reflect.DeepEqual(b.Header.Parent, s.latestBlockHash) {
 		return fmt.Errorf("next block parent hash must be '%x' not '%x'", s.latestBlockHash, b.Header.Parent)
 	}
