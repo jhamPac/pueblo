@@ -73,7 +73,6 @@ func NewStateFromDisk(dataDir string) (*State, error) {
 		state.latestBlockHash = blockFs.Key
 		state.hasGenesisBlock = true
 	}
-
 	return state, nil
 }
 
@@ -138,7 +137,6 @@ func (s *State) copy() State {
 	for _, tx := range s.txMempool {
 		c.txMempool = append(c.txMempool, tx)
 	}
-
 	return c
 }
 
@@ -178,7 +176,6 @@ func applyBlock(b Block, s State) error {
 	if s.hasGenesisBlock && s.latestBlock.Header.Number > 0 && !reflect.DeepEqual(b.Header.Parent, s.latestBlockHash) {
 		return fmt.Errorf("next block parent hash must be '%x' not '%x'", s.latestBlockHash, b.Header.Parent)
 	}
-
 	return applyTXs(b.TXs, &s)
 }
 
